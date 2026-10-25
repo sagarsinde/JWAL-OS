@@ -203,7 +203,8 @@ install_apt_packages() {
         sudo apt-get install -y --no-install-recommends \
             qemu-system-arm \
             qemu-efi-aarch64 \
-            qemu-utils
+            qemu-utils \
+            ipxe-qemu
     fi
 
     log_ok "System packages installed successfully."
