@@ -1,0 +1,49 @@
+# JWAL OS — .gitignore
+
+# Build outputs & OS images
+build/
+dist/
+out/
+rootfs/
+*.img
+*.iso
+*.tar.gz
+*.qcow2
+
+# Rust / Cargo
+target/
+**/*.rs.bk
+
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# QEMU runtime & test artifacts
+*.log
+*.sock
+*.pid
+serial.log
+qemu.pid
+screenshots/test-*.png
+
+# Temporary & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
