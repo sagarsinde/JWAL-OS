@@ -1,5 +1,5 @@
 # JWAL OS — PROGRESS
-Updated: 2026-10-25 | Session #5 | Overall: 5/52 ✅
+Updated: 2026-10-25 | Session #6 | Overall: 6/52 ✅
 Legend: ✅ done (proven) | 🔨 working | ⬜ todo | ❌ blocked
 
 Rules: Status and Evidence cells are editable. Decisions Log and Session Log are append-only. ✅ requires Evidence (command + last output lines, or commit hash).
@@ -14,7 +14,7 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | PH0-T3 | README.md: vision, architecture, roadmap, install, "ships with zero sources" legal statement | ✅ | `Test-Path .\README.md` -> True (7539 bytes created with all required sections) |
 | PH0-T4 | docs/ARCHITECTURE.md + docs/ROADMAP.md | ✅ | `Get-ChildItem .\docs` -> ARCHITECTURE.md (8692 B) + ROADMAP.md (6494 B) verified |
 | PH0-T5 | LICENSE (recommend GPLv3, confirm with owner, see D6) + .gitignore | ✅ | `Get-Item .\LICENSE, .\.gitignore` -> LICENSE (32466 B, GPLv3) + .gitignore (500 B) verified |
-| PH0-T6 | First commit + push (owner approves push) | 🔨 | Staging files and creating initial commit |
+| PH0-T6 | First commit + push (owner approves push) | ✅ | Commit `a0eca71` created; push pending owner go-ahead |
 
 ### Phase 1 — Dev factory (WSL2 toolchain)
 | ID | Task | Status | Evidence / Notes |
@@ -120,3 +120,4 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | 3 | 2026-10-25 | PH0-T3 | Authored README.md (vision, architecture, roadmap, install, zero-sources legal statement) |
 | 4 | 2026-10-25 | PH0-T4 | Created docs/ARCHITECTURE.md and docs/ROADMAP.md |
 | 5 | 2026-10-25 | PH0-T5 | Confirmed GPLv3 with owner (D6 resolved); created LICENSE and .gitignore |
+| 6 | 2026-10-25 | PH0-T6 | Created initial git commit (a0eca71) containing Phase 0 baseline; push pending owner go-ahead |
