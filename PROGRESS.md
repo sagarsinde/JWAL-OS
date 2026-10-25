@@ -1,5 +1,5 @@
 # JWAL OS — PROGRESS
-Updated: 2026-10-25 | Session #7 | Overall: 7/52 ✅
+Updated: 2026-10-25 | Session #9 | Overall: 8/52 ✅
 Legend: ✅ done (proven) | 🔨 working | ⬜ todo | ❌ blocked
 
 Rules: Status and Evidence cells are editable. Decisions Log and Session Log are append-only. ✅ requires Evidence (command + last output lines, or commit hash).
@@ -20,7 +20,7 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | ID | Task | Status | Evidence / Notes |
 |----|------|--------|------------------|
 | PH1-T1 | env-setup.sh for WSL2 Ubuntu | ✅ | `bash ./scripts/env-setup.sh --help` -> exit code 0; syntax checked with `bash -n` |
-| PH1-T2 | Install qemu-system-arm, build-essential, git, Flutter SDK, flutter-elinux, dart | ❌ | Blocked: Windows reboot required to activate WSL2; Fix: restart PC, open Ubuntu, run ./scripts/env-setup.sh |
+| PH1-T2 | Install qemu-system-arm, build-essential, git, Flutter SDK, flutter-elinux, dart | ✅ | Ubuntu 26.04 WSL2 ready; gcc, g++, clang, cmake, ninja, qemu-system-aarch64 (10.2.1), cargo (1.99.1 + musl targets), flutter (3.47.8), flutter-elinux (elinux-wayland/x11) verified via ./scripts/env-setup.sh --check |
 | PH1-T3 | Verify: QEMU boots Alpine aarch64 ISO | ⬜ | |
 | PH1-T4 | Verify: flutter-elinux hello-world window | ⬜ | |
 | PH1-T5 | Spike (D1): flutter-elinux app runs on Alpine/musl aarch64 in QEMU, or record the fallback decision | ⬜ | Added 2026-10-25, see Decisions Log |
@@ -123,3 +123,4 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | 6 | 2026-10-25 | PH0-T6 | Created initial git commit (a0eca71) containing Phase 0 baseline; push pending owner go-ahead |
 | 7 | 2026-10-25 | PH1-T1 | Authored scripts/env-setup.sh with --help, error handling, and toolchain checks |
 | 8 | 2026-10-25 | PH1-T2 | WSL2 installed by owner; Windows reboot required before WSL2 Ubuntu shell is available |
+| 9 | 2026-10-25 | PH1-T2 | Ubuntu WSL2 booted, default user adminjwal created; installed core tools, qemu, cargo+musl, flutter 3.47.8, flutter-elinux; verified with env-setup.sh --check |

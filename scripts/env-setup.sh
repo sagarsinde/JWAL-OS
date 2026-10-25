@@ -19,7 +19,11 @@ set -euo pipefail
 # Configuration defaults
 FLUTTER_VERSION="3.29.0-stable"
 FLUTTER_INSTALL_DIR="${HOME}/development/flutter"
+FLUTTER_ELINUX_DIR="${HOME}/development/flutter-elinux"
 RUST_VERSION="stable"
+
+# Ensure toolchain paths are active in script environment
+export PATH="${FLUTTER_INSTALL_DIR}/bin:${FLUTTER_ELINUX_DIR}/bin:${HOME}/.pub-cache/bin:${HOME}/.cargo/bin:${PATH}"
 
 # ANSI styling
 RED='\033[0;31m'
@@ -56,6 +60,7 @@ show_help() {
     echo -e "${BOLD}OPTIONS:${NC}"
     echo "  -h, --help        Show this help message and exit"
     echo "  -c, --check       Verify installed toolchain without making system modifications"
+    echo "  --no-apt          Skip APT package installation (if already installed)"
     echo "  --no-flutter      Skip Flutter SDK and flutter-elinux installation"
     echo "  --no-rust         Skip Rust toolchain installation"
     echo "  --no-qemu         Skip QEMU system emulator installation"
@@ -169,6 +174,7 @@ install_apt_packages() {
     log_info "Installing core build, disk packaging, and Wayland development libraries..."
     sudo apt-get install -y --no-install-recommends \
         build-essential \
+        clang \
         cmake \
         ninja-build \
         pkg-config \
@@ -224,6 +230,8 @@ install_rust() {
 
 # Install Flutter and flutter-elinux
 install_flutter() {
+    export PATH="${FLUTTER_INSTALL_DIR}/bin:${FLUTTER_ELINUX_DIR}/bin:${HOME}/.pub-cache/bin:${PATH}"
+
     if command -v flutter >/dev/null 2>&1; then
         log_info "Flutter already present in PATH."
     else
@@ -232,33 +240,32 @@ install_flutter() {
         if [[ ! -d "${FLUTTER_INSTALL_DIR}" ]]; then
             git clone --depth 1 -b stable https://github.com/flutter/flutter.git "${FLUTTER_INSTALL_DIR}"
         fi
-        
-        # Add to current path
-        export PATH="${FLUTTER_INSTALL_DIR}/bin:${PATH}"
-        
-        # Suggest shell profile update if not already present
-        local profile_file="${HOME}/.bashrc"
-        if ! grep -q "flutter/bin" "$profile_file" 2>/dev/null; then
-            log_info "Appending Flutter to ${profile_file}..."
-            echo "export PATH=\"${FLUTTER_INSTALL_DIR}/bin:\$PATH\"" >> "$profile_file"
-        fi
+    fi
+
+    log_info "Installing flutter-elinux tool from Sony (embedded Linux Wayland runtime)..."
+    if [[ -d "${FLUTTER_ELINUX_DIR}" ]]; then
+        log_info "flutter-elinux already present at ${FLUTTER_ELINUX_DIR}."
+    else
+        mkdir -p "$(dirname "${FLUTTER_ELINUX_DIR}")"
+        git clone --depth 1 https://github.com/sony/flutter-elinux.git "${FLUTTER_ELINUX_DIR}"
+    fi
+
+    # Ensure PATH is exported in ~/.profile
+    if [[ -f "${HOME}/.profile" ]] && ! grep -q "development/flutter-elinux/bin" "${HOME}/.profile" 2>/dev/null; then
+        echo "export PATH=\"${FLUTTER_INSTALL_DIR}/bin:${FLUTTER_ELINUX_DIR}/bin:\$PATH\"" >> "${HOME}/.profile"
+    fi
+
+    # Ensure PATH is at top of ~/.bashrc so non-interactive shells also receive it
+    if [[ -f "${HOME}/.bashrc" ]] && ! grep -q "development/flutter-elinux/bin" "${HOME}/.bashrc" 2>/dev/null; then
+        local temp_rc
+        temp_rc="$(mktemp)"
+        echo "export PATH=\"${FLUTTER_INSTALL_DIR}/bin:${FLUTTER_ELINUX_DIR}/bin:\$PATH\"" > "$temp_rc"
+        cat "${HOME}/.bashrc" >> "$temp_rc"
+        mv "$temp_rc" "${HOME}/.bashrc"
     fi
 
     log_info "Enabling Flutter Linux desktop support..."
     flutter config --enable-linux-desktop --no-analytics
-
-    log_info "Installing flutter-elinux tool for embedded Linux Wayland runtime..."
-    if command -v dart >/dev/null 2>&1; then
-        dart pub global activate flutter_elinux
-        export PATH="${HOME}/.pub-cache/bin:${PATH}"
-        
-        local profile_file="${HOME}/.bashrc"
-        if ! grep -q ".pub-cache/bin" "$profile_file" 2>/dev/null; then
-            echo "export PATH=\"\$HOME/.pub-cache/bin:\$PATH\"" >> "$profile_file"
-        fi
-    else
-        log_warn "Dart binary not found in PATH yet. Run 'source ~/.bashrc' and 'dart pub global activate flutter_elinux' afterwards."
-    fi
 
     log_ok "Flutter and flutter-elinux setup completed."
 }
@@ -266,6 +273,7 @@ install_flutter() {
 # Main execution entrypoint
 main() {
     local check_only="false"
+    local install_apt_flag="true"
     local install_flutter_flag="true"
     local install_rust_flag="true"
     local install_qemu_flag="true"
@@ -279,6 +287,10 @@ main() {
                 ;;
             -c|--check)
                 check_only="true"
+                shift
+                ;;
+            --no-apt)
+                install_apt_flag="false"
                 shift
                 ;;
             --no-flutter)
@@ -309,7 +321,9 @@ main() {
     fi
 
     # Perform installations
-    install_apt_packages "$install_qemu_flag"
+    if [[ "$install_apt_flag" == "true" ]]; then
+        install_apt_packages "$install_qemu_flag"
+    fi
 
     if [[ "$install_rust_flag" == "true" ]]; then
         install_rust
