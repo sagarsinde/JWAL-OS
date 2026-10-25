@@ -20,7 +20,7 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | ID | Task | Status | Evidence / Notes |
 |----|------|--------|------------------|
 | PH1-T1 | env-setup.sh for WSL2 Ubuntu | ✅ | `bash ./scripts/env-setup.sh --help` -> exit code 0; syntax checked with `bash -n` |
-| PH1-T2 | Install qemu-system-arm, build-essential, git, Flutter SDK, flutter-elinux, dart | ⬜ | |
+| PH1-T2 | Install qemu-system-arm, build-essential, git, Flutter SDK, flutter-elinux, dart | ❌ | Blocked: Windows reboot required to activate WSL2; Fix: restart PC, open Ubuntu, run ./scripts/env-setup.sh |
 | PH1-T3 | Verify: QEMU boots Alpine aarch64 ISO | ⬜ | |
 | PH1-T4 | Verify: flutter-elinux hello-world window | ⬜ | |
 | PH1-T5 | Spike (D1): flutter-elinux app runs on Alpine/musl aarch64 in QEMU, or record the fallback decision | ⬜ | Added 2026-10-25, see Decisions Log |
@@ -122,3 +122,4 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | 5 | 2026-10-25 | PH0-T5 | Confirmed GPLv3 with owner (D6 resolved); created LICENSE and .gitignore |
 | 6 | 2026-10-25 | PH0-T6 | Created initial git commit (a0eca71) containing Phase 0 baseline; push pending owner go-ahead |
 | 7 | 2026-10-25 | PH1-T1 | Authored scripts/env-setup.sh with --help, error handling, and toolchain checks |
+| 8 | 2026-10-25 | PH1-T2 | WSL2 installed by owner; Windows reboot required before WSL2 Ubuntu shell is available |
