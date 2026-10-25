@@ -1,5 +1,5 @@
 # JWAL OS — PROGRESS
-Updated: 2026-10-25 | Session #6 | Overall: 6/52 ✅
+Updated: 2026-10-25 | Session #7 | Overall: 7/52 ✅
 Legend: ✅ done (proven) | 🔨 working | ⬜ todo | ❌ blocked
 
 Rules: Status and Evidence cells are editable. Decisions Log and Session Log are append-only. ✅ requires Evidence (command + last output lines, or commit hash).
@@ -19,7 +19,7 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 ### Phase 1 — Dev factory (WSL2 toolchain)
 | ID | Task | Status | Evidence / Notes |
 |----|------|--------|------------------|
-| PH1-T1 | env-setup.sh for WSL2 Ubuntu | ⬜ | |
+| PH1-T1 | env-setup.sh for WSL2 Ubuntu | ✅ | `bash ./scripts/env-setup.sh --help` -> exit code 0; syntax checked with `bash -n` |
 | PH1-T2 | Install qemu-system-arm, build-essential, git, Flutter SDK, flutter-elinux, dart | ⬜ | |
 | PH1-T3 | Verify: QEMU boots Alpine aarch64 ISO | ⬜ | |
 | PH1-T4 | Verify: flutter-elinux hello-world window | ⬜ | |
@@ -121,3 +121,4 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | 4 | 2026-10-25 | PH0-T4 | Created docs/ARCHITECTURE.md and docs/ROADMAP.md |
 | 5 | 2026-10-25 | PH0-T5 | Confirmed GPLv3 with owner (D6 resolved); created LICENSE and .gitignore |
 | 6 | 2026-10-25 | PH0-T6 | Created initial git commit (a0eca71) containing Phase 0 baseline; push pending owner go-ahead |
+| 7 | 2026-10-25 | PH1-T1 | Authored scripts/env-setup.sh with --help, error handling, and toolchain checks |
