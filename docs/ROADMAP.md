@@ -28,7 +28,7 @@ This roadmap outlines the phased development and verification schedule for **JWA
 ---
 
 ## Phase 2: Core Operating System (aarch64)
-*Target: Minimal, functional Linux root filesystem booting in QEMU to an autologin Wayland session.*
+*Target: Minimal, functional Linux root filesystem booting in QEMU to an autologin Wayland session with remote control input.*
 
 - **PH2-T1:** Root filesystem generator (`scripts/build-rootfs.sh`) for aarch64 with OpenRC.
 - **PH2-T2:** OpenRC service definition for `jwal-shell` (Wayland `cage` compositor launching shell).
@@ -36,30 +36,35 @@ This roadmap outlines the phased development and verification schedule for **JWA
 - **PH2-T4:** Automated QEMU integration test harness (`scripts/test-jwal.sh`) with serial logging and screen capture.
 - **PH2-T5:** Smoke test verification of cold boot sequence in QEMU.
 - **PH2-T6 (Metric D3):** Rootfs size budget verification (<300 MB for base image).
+- **PH2-T7:** HDMI-CEC input bridge service (`libcec` → `uinput` → Linux key events for TV remote control).
+- **PH2-T8:** Bluetooth input daemon (`bluez` pairing and HID profile for BT remotes).
 
 ---
 
 ## Phase 3: TV Shell UI (Flutter / flutter-elinux)
-*Target: 10-foot TV interface with D-pad navigation, dark/#FF6D00 styling, and TV card components.*
+*Target: 10-foot TV interface with D-pad navigation, dark/#FF6D00 styling, TV card components, and browser launcher.*
 
 - **PH3-T1:** Flutter application scaffolding (`jwal-shell`) targeting embedded Linux.
 - **PH3-T2:** Design system implementation (dark surface `#121212`, card `#1E1E1E`, flame `#FF6D00`, high-contrast focus rings).
 - **PH3-T3:** Spatial D-pad navigation controller supporting remote control arrow keys, Enter, and Back.
 - **PH3-T4:** TV Home dashboard: Global search bar, "Continue Watching", and categorized content shelves.
 - **PH3-T5:** Reusable 10-foot TV card components with focus magnification and elevation shadows.
-- **PH3-T6:** Settings interface for display, audio, network status, and plugin management.
+- **PH3-T6:** Settings interface for display, audio, network status, plugin management, and Bluetooth remote pairing.
 - **PH3-T7:** QEMU screenshot verification demonstrating complete boot-to-UI cold start.
+- **PH3-T8:** Browser launcher screen in Flutter UI (URL bar, bookmarks, history — launches WPE/Cog as Wayland surface).
+- **PH3-T9:** On-screen virtual cursor mode (long-press OK toggles mouse emulation via arrow keys for browser).
 
 ---
 
-## Phase 4: Native Media Engine
-*Target: Integrated MPV playback pipeline with hardware acceleration and yt-dlp stream extraction.*
+## Phase 4: Native Media Engine & Ad Filter
+*Target: Integrated MPV playback pipeline with hardware acceleration, yt-dlp stream extraction, and DNS-level ad blocking.*
 
 - **PH4-T1 (Decision D2):** MPV installation, hardware acceleration configuration, and JSON IPC socket setup.
 - **PH4-T2:** Dart MPV service client communicating over Unix domain sockets.
 - **PH4-T3 (Decision D4):** `yt-dlp` stream extraction service integrated into `jwald`.
 - **PH4-T4:** End-to-end integration: URL selection -> extraction -> MPV fullscreen playback.
 - **PH4-T5:** Real-time playback position reporting (resuming playback for "Continue Watching").
+- **PH4-T6:** DNS-level ad/tracker filter in `jwald` (StevenBlack/hosts + OISD blocklists, auto-update, whitelist UI).
 
 ---
 
@@ -88,7 +93,7 @@ This roadmap outlines the phased development and verification schedule for **JWA
 ---
 
 ## Phase 7: Complete Television OS Features
-*Target: Production polish, user profiles, on-screen keyboard, and subtitle/audio selectors.*
+*Target: Production polish, user profiles, on-screen keyboard, browser integration, and subtitle/audio selectors.*
 
 - **PH7-T1:** Persistent watch history and dynamic "Continue Watching" shelf.
 - **PH7-T2:** Offline, on-device recommendation engine based on local watch history.
@@ -96,6 +101,9 @@ This roadmap outlines the phased development and verification schedule for **JWA
 - **PH7-T4:** TV-optimized on-screen virtual keyboard with D-pad navigation and autocomplete.
 - **PH7-T5:** Multi-user profiles with pin-protected Kids Mode.
 - **PH7-T6:** Ambient screensaver and idle display (current time, weather, and system diagnostics).
+- **PH7-T7 (Decision D7):** WPE WebKit + Cog browser integration with content filter injection (uBlock-style cosmetic filters).
+- **PH7-T8:** Browser bookmark/history management with remote-friendly UI.
+- **PH7-T9:** Chromium fallback browser (kiosk mode, `--enable-spatial-navigation`) for Chrome-dependent sites.
 
 ---
 

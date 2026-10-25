@@ -1,5 +1,5 @@
 # JWAL OS — PROGRESS
-Updated: 2026-10-25 | Session #10 | Overall: 9/52 ✅
+Updated: 2026-10-25 | Session #11 | Overall: 9/60 ✅
 Legend: ✅ done (proven) | 🔨 working | ⬜ todo | ❌ blocked
 
 Rules: Status and Evidence cells are editable. Decisions Log and Session Log are append-only. ✅ requires Evidence (command + last output lines, or commit hash).
@@ -34,6 +34,8 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | PH2-T4 | scripts/test-jwal.sh: QEMU boot test (serial log + screenshots; fail if "jwal-shell started" missing in 60 s) | ⬜ | |
 | PH2-T5 | QEMU boot smoke test passes | ⬜ | |
 | PH2-T6 | Rootfs size within budget verified (D3) | ⬜ | |
+| PH2-T7 | HDMI-CEC input bridge service (libcec → uinput → key events) | ⬜ | |
+| PH2-T8 | Bluetooth input daemon (bluez pairing for BT remotes) | ⬜ | |
 
 ### Phase 3 — Shell (Flutter TV UI)
 | ID | Task | Status | Evidence / Notes |
@@ -45,6 +47,8 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | PH3-T5 | Card grid components (10-foot rules) | ⬜ | |
 | PH3-T6 | Settings page | ⬜ | |
 | PH3-T7 | Full boot-to-UI screenshot in QEMU | ⬜ | |
+| PH3-T8 | Browser launcher screen (URL bar, bookmarks, launches WPE/Cog) | ⬜ | |
+| PH3-T9 | On-screen virtual cursor mode (long-press OK → mouse emulation) | ⬜ | |
 
 ### Phase 4 — Media engine
 | ID | Task | Status | Evidence / Notes |
@@ -54,6 +58,7 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | PH4-T3 | yt-dlp extraction service; resolve D4 | ⬜ | |
 | PH4-T4 | E2E: URL -> yt-dlp -> MPV fullscreen | ⬜ | |
 | PH4-T5 | Playback position reporting (Continue Watching data) | ⬜ | |
+| PH4-T6 | DNS-level ad/tracker filter in jwald (blocklists + whitelist UI) | ⬜ | |
 
 ### Phase 5 — Source plugin system
 | ID | Task | Status | Evidence / Notes |
@@ -84,6 +89,9 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | PH7-T4 | On-screen keyboard (search) | ⬜ | |
 | PH7-T5 | Kids mode + profiles | ⬜ | |
 | PH7-T6 | Idle screen (clock/weather) | ⬜ | |
+| PH7-T7 | WPE WebKit + Cog browser integration (content filter injection; D7) | ⬜ | |
+| PH7-T8 | Browser bookmark/history with remote-friendly UI | ⬜ | |
+| PH7-T9 | Chromium fallback browser (kiosk, spatial-nav) for Chrome-only sites | ⬜ | |
 
 ### Phase 8 — Image and first release
 | ID | Task | Status | Evidence / Notes |
@@ -103,6 +111,7 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | D4 | yt-dlp extraction in Dart or jwald | jwald | PH4-T3 | OPEN |
 | D5 | cloudscraper fallback | Out of core; community plugins only | PH5-T1 | OPEN |
 | D6 | License | GPLv3 | PH0-T5 | RESOLVED (GPLv3) |
+| D7 | Browser engine: WPE WebKit (primary) + Chromium (fallback) vs Chromium-only | WPE WebKit + Cog primary; Chromium fallback | PH7-T7 | RESOLVED (Option A) |
 
 ## Decisions Log (append only)
 | Date | Decision | Reason |
@@ -110,6 +119,9 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | 2026-10-25 | Added PH1-T5 (musl feasibility spike) | Flutter engine targets glibc; find out before building Phase 2 on Alpine |
 | 2026-10-25 | Boot < 10 s is a real-hardware target only | QEMU TCG emulation is not representative |
 | 2026-10-25 | D6 resolved: GPLv3 license confirmed | Confirmed by owner for copyleft protection and MPV compatibility |
+| 2026-10-25 | D7 resolved: Browser = WPE WebKit + Cog (primary) + Chromium (fallback) | Brave incompatible with Alpine musl/aarch64; WPE is TV-native (~80MB RAM vs ~400MB Chromium); DNS ad-blocking at OS level is superior to and undetectable vs browser-level blocking |
+| 2026-10-25 | TV remote via HDMI-CEC (libcec → uinput) as primary input | Pi 4 has CEC built into HDMI; TV's own remote works without extra hardware; also supports IR (lirc) and Bluetooth (bluez) |
+| 2026-10-25 | DNS ad-blocking in jwald replaces need for Brave | StevenBlack/hosts + OISD blocklists; invisible to anti-adblock scripts; system-wide protection for browser + MPV + plugins |
 
 ## Session Log (append only)
 | # | Date | Task(s) | Outcome |
@@ -125,3 +137,4 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | 8 | 2026-10-25 | PH1-T2 | WSL2 installed by owner; Windows reboot required before WSL2 Ubuntu shell is available |
 | 9 | 2026-10-25 | PH1-T2 | Ubuntu WSL2 booted, default user adminjwal created; installed core tools, qemu, cargo+musl, flutter 3.47.8, flutter-elinux; verified with env-setup.sh --check |
 | 10 | 2026-10-25 | PH1-T3 | Created test-qemu-alpine.sh; downloaded alpine-virt-3.21.9-aarch64.iso (76 MB); QEMU booted to Alpine login prompt with OpenRC; serial.log verified |
+| 11 | 2026-10-25 | Architecture expansion | Added browser (WPE WebKit + Chromium fallback), remote control (HDMI-CEC/IR/BT), DNS ad-blocking subsystems to ARCHITECTURE.md and ROADMAP.md; resolved D7; total tasks 52→60 |
