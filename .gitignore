@@ -20,6 +20,7 @@ target/
 .pub/
 .flutter-plugins
 .flutter-plugins-dependencies
+hello_elinux/
 
 # Python
 __pycache__/

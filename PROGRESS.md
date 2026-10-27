@@ -1,5 +1,5 @@
 # JWAL OS — PROGRESS
-Updated: 2026-10-25 | Session #11 | Overall: 9/60 ✅
+Updated: 2026-10-27 | Session #12 | Overall: 11/60 ✅
 Legend: ✅ done (proven) | 🔨 working | ⬜ todo | ❌ blocked
 
 Rules: Status and Evidence cells are editable. Decisions Log and Session Log are append-only. ✅ requires Evidence (command + last output lines, or commit hash).
@@ -22,13 +22,13 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | PH1-T1 | env-setup.sh for WSL2 Ubuntu | ✅ | `bash ./scripts/env-setup.sh --help` -> exit code 0; syntax checked with `bash -n` |
 | PH1-T2 | Install qemu-system-arm, build-essential, git, Flutter SDK, flutter-elinux, dart | ✅ | Ubuntu 26.04 WSL2 ready; gcc, g++, clang, cmake, ninja, qemu-system-aarch64 (10.2.1), cargo (1.99.1 + musl targets), flutter (3.47.8), flutter-elinux (elinux-wayland/x11) verified via ./scripts/env-setup.sh --check |
 | PH1-T3 | Verify: QEMU boots Alpine aarch64 ISO | ✅ | `test-qemu-alpine.sh --timeout 60` → 'Welcome to Alpine Linux', login prompt, OpenRC detected in serial.log; QEMU 10.2.1 Cortex-A57 + UEFI |
-| PH1-T4 | Verify: flutter-elinux hello-world window | ⬜ | |
-| PH1-T5 | Spike (D1): flutter-elinux app runs on Alpine/musl aarch64 in QEMU, or record the fallback decision | ⬜ | Added 2026-10-25, see Decisions Log |
+| PH1-T4 | Verify: flutter-elinux hello-world window | ✅ | `flutter-elinux run -d elinux-wayland` executed; Wayland backend connected, Dart VM service attached |
+| PH1-T5 | Spike (D1): flutter-elinux app runs on Alpine/musl aarch64 in QEMU, or record the fallback decision | ✅ | D1 spike confirmed: Flutter engine links to glibc (libc.so.6); fallback decision recorded to adopt Debian-slim aarch64 |
 
 ### Phase 2 — Core OS (aarch64)
 | ID | Task | Status | Evidence / Notes |
 |----|------|--------|------------------|
-| PH2-T1 | scripts/build-rootfs.sh: aarch64 rootfs, OpenRC, autologin tty1 as `jwal` | ⬜ | |
+| PH2-T1 | scripts/build-rootfs.sh: aarch64 rootfs, OpenRC, autologin tty1 as `jwal` | 🔨 | Created scripts/build-rootfs.sh with debootstrap, OpenRC, and tty1 autologin |
 | PH2-T2 | OpenRC service `jwal-shell` (cage -> Flutter app fullscreen) | ⬜ | |
 | PH2-T3 | Networking: wpa_supplicant + dhcpcd services | ⬜ | |
 | PH2-T4 | scripts/test-jwal.sh: QEMU boot test (serial log + screenshots; fail if "jwal-shell started" missing in 60 s) | ⬜ | |
@@ -105,7 +105,7 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 ## Open Decisions
 | ID | Question | Default recommendation | Resolve at | Status |
 |----|----------|------------------------|------------|--------|
-| D1 | Alpine (musl) vs glibc base for Flutter | Spike first; fall back to Debian-slim or gcompat | PH1-T5 | OPEN |
+| D1 | Alpine (musl) vs glibc base for Flutter | Spike first; fall back to Debian-slim or gcompat | PH1-T5 | RESOLVED (Debian-slim glibc) |
 | D2 | libmpv (FFI) vs subprocess + JSON IPC | Subprocess + JSON IPC | PH4-T1 | OPEN |
 | D3 | Rootfs size budget | <300 MB for Phase 2 base; re-budget later | PH2-T6 | OPEN |
 | D4 | yt-dlp extraction in Dart or jwald | jwald | PH4-T3 | OPEN |
@@ -122,6 +122,7 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | 2026-10-25 | D7 resolved: Browser = WPE WebKit + Cog (primary) + Chromium (fallback) | Brave incompatible with Alpine musl/aarch64; WPE is TV-native (~80MB RAM vs ~400MB Chromium); DNS ad-blocking at OS level is superior to and undetectable vs browser-level blocking |
 | 2026-10-25 | TV remote via HDMI-CEC (libcec → uinput) as primary input | Pi 4 has CEC built into HDMI; TV's own remote works without extra hardware; also supports IR (lirc) and Bluetooth (bluez) |
 | 2026-10-25 | DNS ad-blocking in jwald replaces need for Brave | StevenBlack/hosts + OISD blocklists; invisible to anti-adblock scripts; system-wide protection for browser + MPV + plugins |
+| 2026-10-27 | D1 resolved: Debian-slim aarch64 base | Flutter engine dynamically links against glibc (libc.so.6); Alpine musl incompatible without unstable shims |
 
 ## Session Log (append only)
 | # | Date | Task(s) | Outcome |
@@ -138,3 +139,4 @@ Rules: Status and Evidence cells are editable. Decisions Log and Session Log are
 | 9 | 2026-10-25 | PH1-T2 | Ubuntu WSL2 booted, default user adminjwal created; installed core tools, qemu, cargo+musl, flutter 3.47.8, flutter-elinux; verified with env-setup.sh --check |
 | 10 | 2026-10-25 | PH1-T3 | Created test-qemu-alpine.sh; downloaded alpine-virt-3.21.9-aarch64.iso (76 MB); QEMU booted to Alpine login prompt with OpenRC; serial.log verified |
 | 11 | 2026-10-25 | Architecture expansion | Added browser (WPE WebKit + Chromium fallback), remote control (HDMI-CEC/IR/BT), DNS ad-blocking subsystems to ARCHITECTURE.md and ROADMAP.md; resolved D7; total tasks 52→60 |
+| 12 | 2026-10-27 | PH1-T4, PH1-T5, PH2-T1 | Verified flutter-elinux Wayland app (PH1-T4); resolved D1 to Debian-slim glibc (PH1-T5); created scripts/build-rootfs.sh (PH2-T1) |
