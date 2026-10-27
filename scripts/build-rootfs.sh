@@ -95,17 +95,25 @@ check_prerequisites() {
     fi
 
     local missing=0
-    for pkg in debootstrap qemu-aarch64-static; do
-        if ! command -v "$pkg" >/dev/null 2>&1 && [[ ! -f "/usr/bin/$pkg" ]]; then
-            log_warn "Missing required host tool: $pkg"
-            missing=$((missing + 1))
-        fi
-    done
+    if ! command -v debootstrap >/dev/null 2>&1; then
+        missing=$((missing + 1))
+    fi
+    if ! command -v qemu-aarch64-static >/dev/null 2>&1 && [[ ! -f "/usr/bin/qemu-aarch64-static" ]] && ! command -v qemu-aarch64 >/dev/null 2>&1; then
+        missing=$((missing + 1))
+    fi
 
     if [[ $missing -gt 0 ]]; then
-        log_info "Installing debootstrap, qemu-user-static, and binfmt-support..."
+        log_info "Installing debootstrap and QEMU user emulation packages..."
         apt-get update -y
-        apt-get install -y --no-install-recommends debootstrap qemu-user-static binfmt-support
+        # Try qemu-user-binfmt (Ubuntu 26.04+), fallback to qemu-user-static (older Debian/Ubuntu)
+        apt-get install -y --no-install-recommends debootstrap binfmt-support qemu-user-binfmt || \
+            apt-get install -y --no-install-recommends debootstrap binfmt-support qemu-user-static || \
+            apt-get install -y --no-install-recommends debootstrap binfmt-support qemu-user
+    fi
+
+    # Ensure /usr/bin/qemu-aarch64-static exists if only qemu-aarch64 is present
+    if [[ ! -f "/usr/bin/qemu-aarch64-static" ]] && command -v qemu-aarch64-static >/dev/null 2>&1; then
+        ln -sf "$(command -v qemu-aarch64-static)" /usr/bin/qemu-aarch64-static
     fi
     log_ok "Host prerequisites satisfied."
 }
@@ -127,13 +135,17 @@ bootstrap_rootfs() {
     
     local base_packages="linux-image-arm64,openrc,sudo,kmod,udev,procps,net-tools,iproute2,dhcpcd,wpasupplicant,cage,libwayland-client0,libegl1,libgles2,libdrm2,libgbm1,libxkbcommon0"
 
-    debootstrap \
-        --arch="$TARGET_ARCH" \
-        --variant=minbase \
-        --include="$base_packages" \
-        "$DEBIAN_RELEASE" \
-        "$OUTPUT_DIR" \
-        "$DEBIAN_MIRROR"
+    if ! debootstrap --arch="$TARGET_ARCH" --variant=minbase --include="$base_packages" "$DEBIAN_RELEASE" "$OUTPUT_DIR" "$DEBIAN_MIRROR"; then
+        log_warn "Single-stage debootstrap failed; attempting two-stage foreign bootstrap with QEMU..."
+        debootstrap --arch="$TARGET_ARCH" --variant=minbase --foreign --include="$base_packages" "$DEBIAN_RELEASE" "$OUTPUT_DIR" "$DEBIAN_MIRROR"
+        
+        # Ensure qemu static binary is present in chroot
+        if [[ -f "/usr/bin/qemu-aarch64-static" ]]; then
+            mkdir -p "$OUTPUT_DIR/usr/bin"
+            cp /usr/bin/qemu-aarch64-static "$OUTPUT_DIR/usr/bin/"
+        fi
+        chroot "$OUTPUT_DIR" /debootstrap/debootstrap --second-stage
+    fi
 
     log_ok "Debootstrap phase completed."
 }
@@ -224,3 +236,4 @@ main() {
 }
 
 main "$@"
+
