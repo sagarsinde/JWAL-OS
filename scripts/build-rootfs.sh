@@ -18,11 +18,18 @@ set -euo pipefail
 DEBIAN_RELEASE="bookworm"
 DEBIAN_MIRROR="http://deb.debian.org/debian"
 TARGET_ARCH="arm64"
-OUTPUT_DIR="$(pwd)/build/rootfs"
 ROOT_PASS="jwal"
 USER_NAME="jwal"
 USER_PASS="jwal"
 HOSTNAME="jwal-os"
+
+# Project paths
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BUILD_DIR="${PROJECT_ROOT}/build"
+IMAGE_OUTPUT="${BUILD_DIR}/rootfs.img"
+# Always build on native ext4 (avoids Windows 9p/NTFS tar & permission errors)
+WORK_DIR="/var/tmp/jwal-rootfs"
+OUTPUT_DIR="$WORK_DIR"
 
 # ANSI Colors
 RED='\033[0;31m'
@@ -119,15 +126,9 @@ check_prerequisites() {
 }
 
 clean_output() {
-    if [[ -d "$OUTPUT_DIR" ]]; then
-        if [[ "$CLEAN_BUILD" == "true" ]]; then
-            log_info "Cleaning previous build directory: $OUTPUT_DIR..."
-            rm -rf "$OUTPUT_DIR"
-        else
-            log_warn "Output directory already exists. Use --clean to rebuild from scratch."
-        fi
-    fi
-    mkdir -p "$OUTPUT_DIR"
+    log_info "Preparing native ext4 workspace at $WORK_DIR..."
+    rm -rf "$WORK_DIR"
+    mkdir -p "$WORK_DIR" "$BUILD_DIR"
 }
 
 bootstrap_rootfs() {
@@ -217,14 +218,41 @@ EOF
     log_ok "Rootfs configuration complete."
 }
 
+package_image() {
+    log_info "Creating ext4 filesystem image: $IMAGE_OUTPUT..."
+    mkdir -p "$BUILD_DIR"
+    
+    # Calculate required image size with 20% headroom
+    local used_kb
+    used_kb=$(du -sk "$WORK_DIR" | cut -f1)
+    local img_size_mb=$(( (used_kb / 1024) + 150 ))
+    if [[ $img_size_mb -lt 800 ]]; then
+        img_size_mb=800
+    fi
+
+    log_info "Packaging rootfs into ${img_size_mb} MB ext4 raw disk image using mke2fs..."
+    mke2fs -t ext4 -d "$WORK_DIR" -F "$IMAGE_OUTPUT" "${img_size_mb}M"
+
+    # Extract kernel and initramfs for direct QEMU booting
+    log_info "Extracting kernel and initramfs to $BUILD_DIR for QEMU testing..."
+    cp "$WORK_DIR"/boot/vmlinuz* "$BUILD_DIR/vmlinuz-aarch64" 2>/dev/null || true
+    cp "$WORK_DIR"/boot/initrd.img* "$BUILD_DIR/initrd-aarch64" 2>/dev/null || true
+
+    log_ok "Image packaging complete: $IMAGE_OUTPUT"
+}
+
 measure_size() {
     local size_mb
-    size_mb=$(du -sm "$OUTPUT_DIR" | cut -f1)
+    size_mb=$(du -sm "$WORK_DIR" | cut -f1)
+    local img_mb
+    img_mb=$(du -sm "$IMAGE_OUTPUT" | cut -f1)
+
     echo -e "\n${GREEN}${BOLD}=== JWAL OS aarch64 Rootfs Built Successfully ===${NC}"
-    echo -e "Location:     $OUTPUT_DIR"
-    echo -e "Total Size:   ${BOLD}${size_mb} MB${NC}"
-    echo -e "Autologin:    User '${BOLD}$USER_NAME${NC}' on tty1 and ttyAMA0"
-    echo -e "Init System:  OpenRC\n"
+    echo -e "Rootfs Tree:   $WORK_DIR (${size_mb} MB)"
+    echo -e "Boot Disk:     $IMAGE_OUTPUT (${img_mb} MB ext4)"
+    echo -e "Kernel/Initrd: $BUILD_DIR/vmlinuz-aarch64"
+    echo -e "Autologin:     User '${BOLD}$USER_NAME${NC}' on tty1 and ttyAMA0"
+    echo -e "Init System:   OpenRC\n"
 }
 
 main() {
@@ -232,6 +260,7 @@ main() {
     clean_output
     bootstrap_rootfs
     configure_rootfs
+    package_image
     measure_size
 }
 
