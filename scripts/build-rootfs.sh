@@ -185,6 +185,9 @@ EOF
     "
 
     # 4. OpenRC Inittab with automated getty login on tty1 and serial ttyAMA0
+    # Ensure standard /sbin/init points to OpenRC init binary
+    ln -sf /sbin/openrc-init "$OUTPUT_DIR/sbin/init"
+
     cat << EOF > "$OUTPUT_DIR/etc/inittab"
 id:3:initdefault:
 si::sysinit:/sbin/openrc sysinit
@@ -199,14 +202,26 @@ tty1:12345:respawn:/sbin/agetty --autologin $USER_NAME --noclear 38400 tty1 linu
 ttyAMA0:12345:respawn:/sbin/agetty --autologin $USER_NAME --noclear 115200 ttyAMA0 vt100
 EOF
 
-    # 5. Enable baseline OpenRC services
+    # 5. Install jwal-shell service and launcher
+    log_info "Installing jwal-shell OpenRC service and Wayland launcher..."
+    if [[ -f "${PROJECT_ROOT}/services/jwal-shell" ]]; then
+        cp "${PROJECT_ROOT}/services/jwal-shell" "$OUTPUT_DIR/etc/init.d/jwal-shell"
+        chmod +x "$OUTPUT_DIR/etc/init.d/jwal-shell"
+    fi
+    if [[ -f "${PROJECT_ROOT}/services/jwal-shell-launcher" ]]; then
+        mkdir -p "$OUTPUT_DIR/usr/local/bin"
+        cp "${PROJECT_ROOT}/services/jwal-shell-launcher" "$OUTPUT_DIR/usr/local/bin/jwal-shell-launcher"
+        chmod +x "$OUTPUT_DIR/usr/local/bin/jwal-shell-launcher"
+    fi
+
+    # 6. Enable baseline OpenRC services (including kiosk shell & networking)
     chroot "$OUTPUT_DIR" /bin/bash -c "
         rc-update add udev boot || true
-        rc-update add procfs boot || true
-        rc-update add sysfs boot || true
+        rc-update add jwal-shell default || true
+        rc-update add dhcpcd default || true
     "
 
-    # 6. Purge package caches to respect size budget
+    # 7. Purge package caches to respect size budget
     log_info "Cleaning apt caches to minimize rootfs size..."
     chroot "$OUTPUT_DIR" /bin/bash -c "
         apt-get clean

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# JWAL OS — TV Shell Launcher Script
+# ==============================================================================
+# Executed by Cage inside Wayland session
+# ==============================================================================
+
+set -euo pipefail
+
+# Export Wayland environment
+export XDG_SESSION_TYPE=wayland
+export GDK_BACKEND=wayland
+export CLUTTER_BACKEND=wayland
+
+# Log startup
+echo "[JWAL-OS] jwal-shell-launcher: Wayland session started under cage"
+
+# 1. If Flutter TV Shell binary is installed, launch it fullscreen
+if [[ -x /usr/local/bin/jwal-shell ]]; then
+    echo "[JWAL-OS] Launching /usr/local/bin/jwal-shell..."
+    exec /usr/local/bin/jwal-shell
+fi
+
+# 2. Fallback loop if shell binary is not yet compiled
+echo "[JWAL-OS] jwal-shell binary awaiting installation. Standing by..."
+while true; do
+    sleep 3600
+done
+

@@ -1,0 +1,58 @@
+#!/sbin/openrc-run
+# ==============================================================================
+# JWAL OS — OpenRC Service: jwal-shell
+# ==============================================================================
+# Purpose:
+#   Launches the 'cage' Wayland kiosk compositor as user 'jwal' to run the
+#   JWAL Flutter TV Shell in fullscreen on bare-metal KMS/DRM or QEMU virtio-gpu.
+# ==============================================================================
+
+name="jwal-shell"
+description="JWAL OS Wayland TV Shell Kiosk"
+
+depend() {
+    after udev bootmisc
+    keyword -shutdown
+}
+
+USER="jwal"
+HOME_DIR="/home/jwal"
+RUNDIR="/run/user/1000"
+CAGE_BIN="/usr/bin/cage"
+LAUNCHER="/usr/local/bin/jwal-shell-launcher"
+
+start_pre() {
+    mkdir -p "$RUNDIR"
+    chown "$USER:$USER" "$RUNDIR"
+    chmod 0700 "$RUNDIR"
+
+    # Ensure launcher has execute permissions
+    if [[ -f "$LAUNCHER" ]]; then
+        chmod +x "$LAUNCHER"
+    fi
+}
+
+start() {
+    ebegin "Starting JWAL OS TV Shell ($name)"
+    
+    start-stop-daemon --start \
+        --background \
+        --make-pidfile \
+        --pidfile /run/jwal-shell.pid \
+        --user "$USER" \
+        --chdir "$HOME_DIR" \
+        --env XDG_RUNTIME_DIR="$RUNDIR" \
+        --env XDG_SESSION_TYPE="wayland" \
+        --env WLR_LIBINPUT_NO_DEVICES=1 \
+        --env WLR_RENDERER=gles2 \
+        --exec "$CAGE_BIN" -- -d -s -- "$LAUNCHER"
+        
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping JWAL OS TV Shell ($name)"
+    start-stop-daemon --stop --pidfile /run/jwal-shell.pid
+    eend $?
+}
+
